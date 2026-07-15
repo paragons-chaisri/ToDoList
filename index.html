@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive To-Do List & Operations Dashboard</title>
-    <style>
+<style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Helvetica Neue', Arial, sans-serif;
             background-color: #f4f6f9;
@@ -176,20 +176,38 @@
             background-color: #edf2f7;
             color: #4a5568;
         }
+        .link-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
         .link-btn {
             display: inline-flex;
             align-items: center;
             background-color: #edf2f7;
             color: #2b6cb0;
-            padding: 4px 8px;
+            padding: 6px 12px;
             border-radius: 4px;
             text-decoration: none;
             font-weight: 500;
-            font-size: 12px;
-            margin-top: 5px;
+            font-size: 13px;
+            border: 1px solid #cbd5e0;
+            transition: all 0.2s ease;
         }
         .link-btn:hover {
             background-color: #e2e8f0;
+            color: #2b6cb0;
+            border-color: #a0aec0;
+        }
+        .link-btn.sheet-btn {
+            background-color: #e6fffa;
+            color: #234e52;
+            border-color: #b2f5ea;
+        }
+        .link-btn.sheet-btn:hover {
+            background-color: #b2f5ea;
+            color: #234e52;
         }
         .completed .task-title {
             text-decoration: line-through;
@@ -198,20 +216,6 @@
         .completed {
             opacity: 0.7;
             background-color: #f7fafc;
-        }
-        .save-btn {
-            background-color: #38a169;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            float: right;
-            margin-top: 10px;
-        }
-        .save-btn:hover {
-            background-color: #2f855a;
         }
         .clear { clear: both; }
     </style>
