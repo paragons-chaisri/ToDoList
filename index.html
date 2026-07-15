@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive To-Do List & Operations Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .header {
+            border-bottom: 2px solid #edf2f7;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #1a202c;
+            margin: 0;
+        }
+        .header .subtitle {
+            font-size: 14px;
+            color: #718096;
+            margin-top: 5px;
+        }
+        .badge-date {
+            background-color: #3182ce;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .info-note {
+            background-color: #ebf8ff;
+            border-left: 4px solid #3182ce;
+            color: #2b6cb0;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+        .task-card:hover {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            border-color: #cbd5e0;
+        }
+        .task-header {
+            padding: 15px 20px;
+            background: #f7fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .task-title-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-grow: 1;
+        }
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #38a169;
+        }
+        .task-num {
+            font-weight: bold;
+            color: #4a5568;
+            font-size: 16px;
+        }
+        .task-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: #2d3748;
+            outline: none;
+            border-bottom: 1px dashed transparent;
+        }
+        .task-title:focus {
+            border-bottom-color: #4a5568;
+            background: #fff;
+        }
+        .priority-badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .prio-high { background-color: #fed7d7; color: #9b2c2c; }
+        .prio-med { background-color: #feebc8; color: #9c4221; }
+        .prio-low { background-color: #e2e8f0; color: #4a5568; }
+
+        .task-body {
+            padding: 20px;
+        }
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+            background: #fafafa;
+            padding: 12px;
+            border-radius: 6px;
+        }
+        .meta-item {
+            font-size: 14px;
+        }
+        .meta-label {
+            font-weight: 600;
+            color: #718096;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .meta-val {
+            color: #2d3748;
+            outline: none;
+        }
+        .meta-val:focus {
+            background: #fff;
+            box-shadow: 0 0 0 2px #cbd5e0;
+        }
+        .details-area {
+            font-size: 14px;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+        .details-area ul, .details-area ol {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+        .editable-block {
+            outline: none;
+            padding: 4px;
+            border-radius: 4px;
+            border: 1px dashed transparent;
+        }
+        .editable-block:focus {
+            border-color: #a0aec0;
+            background-color: #fff;
+        }
+        .branch-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+        .branch-table th, .branch-table td {
+            border: 1px solid #e2e8f0;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        .branch-table th {
+            background-color: #edf2f7;
+            color: #4a5568;
+        }
+        .link-btn {
+            display: inline-flex;
+            align-items: center;
+            background-color: #edf2f7;
+            color: #2b6cb0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .link-btn:hover {
+            background-color: #e2e8f0;
+        }
+        .completed .task-title {
+            text-decoration: line-through;
+            color: #a0aec0;
+        }
+        .completed {
+            opacity: 0.7;
+            background-color: #f7fafc;
+        }
+        .save-btn {
+            background-color: #38a169;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            float: right;
+            margin-top: 10px;
+        }
+        .save-btn:hover {
+            background-color: #2f855a;
+        }
+        .clear { clear: both; }
+    </style>
+    <script>
+        function toggleComplete(checkbox, cardId) {
+            const card = document.getElementById(cardId);
+            if (checkbox.checked) {
+                card.classList.add('completed');
+            } else {
+                card.classList.remove('completed');
+            }
+        }
+        function printPage() {
+            window.print();
+        }
+    </script>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <h1>📦 ใบงานและรายการ To-Do List ฝ่ายจัดส่งสินค้า</h1>
+            <div class="subtitle">จัดเรียงตามลำดับความเร่งด่วนและกำหนดส่ง (คุณสามารถคลิกแก้ไขข้อความบนจอได้โดยตรง)</div>
+        </div>
+        <div>
+            <span class="badge-date">ประจำวันที่: 15-18/07/2026</span>
+            <button onclick="printPage()" style="margin-left: 10px; padding: 6px 12px; font-size: 13px; cursor:pointer; background:#edf2f7; border:1px solid #cbd5e0; border-radius:4px;">สั่งพิมพ์ PDF / กระดาษ</button>
+        </div>
+    </div>
+
+    <div class="info-note">
+        💡 <strong>คำแนะนำการใช้งาน:</strong> ไฟล์นี้เป็นระบบ Interactive คุณสามารถทำเครื่องหมายถูก <input type="checkbox" disabled> หน้ารายการที่ทำเสร็จแล้ว และสามารถ <strong>คลิกพิมพ์เพื่อแก้ไขข้อความใดๆ ก็ได้</strong> ในหน้านี้โดยตรงทันทีเพื่อบันทึกหรือปรับปรุงข้อมูล
+    </div>
+
+    <!-- TASK 1 -->
+    <div class="task-card" id="task1">
+        <div class="task-header">
+            <div class="task-title-area">
+                <input type="checkbox" class="task-checkbox" onclick="toggleComplete(this, 'task1')">
+                <span class="task-num">ลำดับที่ 1</span>
+                <span class="task-title" contenteditable="true">Chula คลังสยาม</span>
+            </div>
+            <span class="priority-badge prio-high">ด่วนที่สุด (เช้า)</span>
+        </div>
+        <div class="task-body">
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <span class="meta-label">⏱️ กำหนดส่งเสร็จภายใน:</span>
+                    <span class="meta-val" contenteditable="true">16/07/2026 (ห้ามเกิน 10:00 น.)</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">🚚 รูปแบบจัดส่ง:</span>
+                    <span class="meta-val" contenteditable="true">เรียกรถ Lalamove</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">📦 จำนวนที่จัดส่ง:</span>
+                    <span class="meta-val" contenteditable="true">เกม (ของเรา) 15 ชิ้น</span>
+                </div>
+            </div>
+            <div class="details-area">
+                <strong>📋 ขั้นตอนทำงานและการประสานงาน:</strong>
+                <div class="editable-block" contenteditable="true">
+                    <ul>
+                        <li><span style="color: #2b6cb0; font-weight:bold;">สถานะปัจจุบัน:</span> คุณภูจัดเซ็ตสินค้าเรียบร้อยแล้ว <strong>(ขอคนช่วยตรวจสอบเช็คความถูกต้องอีก 1 คนก่อนส่ง)</strong></li>
+                        <li>เบิกงานตามใบงานที่ปริ้นท์ให้เรียบร้อย</li>
+                        <li>ยิงโปรแกรม Zort เลขระบบ: <strong style="color: #c53030;">TF-202607171 (Receive)</strong> และบรรจุลงกล่องได้เลย</li>
+                        <li><span style="color: #2b6cb0; font-weight:bold;">กำลังคน:</span> ขอคนเช็คลงกล่อง 1 คน และคนเบิกสินค้า 1 คน</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TASK 2 -->
+    <div class="task-card" id="task2">
+        <div class="task-header">
+            <div class="task-title-area">
+                <input type="checkbox" class="task-checkbox" onclick="toggleComplete(this, 'task2')">
+                <span class="task-num">ลำดับที่ 2</span>
+                <span class="task-title" contenteditable="true">B2S DC</span>
+            </div>
+            <span class="priority-badge prio-high">ด่วนมาก</span>
+        </div>
+        <div class="task-body">
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <span class="meta-label">⏱️ กำหนดส่งเสร็จภายใน:</span>
+                    <span class="meta-val" contenteditable="true">16/07/2026 (จัดส่งรอบ 11:00 น.)</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">🚚 รูปแบบจัดส่ง:</span>
+                    <span class="meta-val" contenteditable="true">เรียกรถ Lalamove</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">📍 ตำแหน่งจัดเก็บสินค้า:</span>
+                    <span class="meta-val" contenteditable="true">ชั้น 3 ตรงโซนของใช้คาเฟ่</span>
+                </div>
+            </div>
+            <div class="details-area">
+                <strong>📋 ขั้นตอนทำงานและการประสานงาน:</strong>
+                <div class="editable-block" contenteditable="true">
+                    <ul>
+                        <li><span style="color: #38a169; font-weight:bold;">สถานะสินค้า:</span> **จัดของเตรียมไว้เรียบร้อยแล้ว** อยู่ที่ชั้น 3 โซนของใช้คาเฟ่</li>
+                        <li>ทำการตรวจสอบความถูกต้องขั้นสุดท้ายและนำแพ็คเตรียมขึ้นรถ Lalamove ตามเวลานัดหมาย</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TASK 3 -->
+    <div class="task-card" id="task3">
+        <div class="task-header">
+            <div class="task-title-area">
+                <input type="checkbox" class="task-checkbox" onclick="toggleComplete(this, 'task3')">
+                <span class="task-num">ลำดับที่ 3</span>
+                <span class="task-title" contenteditable="true">งานกล่องบุบ ส่งคาเฟ่โลตัสบางนา</span>
+            </div>
+            <span class="priority-badge prio-med">ความสำคัญปกติ</span>
+        </div>
+        <div class="task-body">
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <span class="meta-label">⏱️ กำหนดส่งเสร็จภายใน:</span>
+                    <span class="meta-val" contenteditable="true">16/07/2026</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">🚚 รูปแบบจัดส่ง:</span>
+                    <span class="meta-val" contenteditable="true">เรียกรถ Lalamove</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">📦 จำนวนที่จัดส่ง:</span>
+                    <span class="meta-val" contenteditable="true">เกมบุบ 200 ชิ้น</span>
+                </div>
+            </div>
+            <div class="details-area">
+                <strong>📋 ขั้นตอนทำงานและการประสานงาน:</strong>
+                <div class="editable-block" contenteditable="true">
+                    <ul>
+                        <li><span style="color: #b7791f; font-weight:bold;">หมายเหตุสำคัญ:</span> ให้ตรวจสอบและจดแยกสีของสินค้าด้วย (จดสี ?)</li>
+                        <li>ใช้โปรแกรมคุมคลัง: <strong>Scan Box Event B</strong></li>
+                        <li>🔗 ลิงก์ระบบ AppSheet: <a href="https://www.appsheet.com/start/83d91c6d-424a-4e89-a566-470e6f8ca550" target="_blank" class="link-btn">เปิดระบบ Scan Box Event B</a></li>
+                        <li>หากพนักงานท่านใดพร้อมเริ่มงานแพ็ค สามารถติดต่อรับใบปะหน้าเพื่อเริ่มดำเนินการได้ทันที</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TASK 4 -->
+    <div class="task-card" id="task4">
+        <div class="task-header">
+            <div class="task-title-area">
+                <input type="checkbox" class="task-checkbox" onclick="toggleComplete(this, 'task4')">
+                <span class="task-num">ลำดับที่ 4</span>
+                <span class="task-title" contenteditable="true">นายอินทร์ Naiin (กระจาย 11 สาขา)</span>
+            </div>
+            <span class="priority-badge prio-med">ความสำคัญปกติ</span>
+        </div>
+        <div class="task-body">
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <span class="meta-label">⏱️ กำหนดส่งเสร็จภายใน:</span>
+                    <span class="meta-val" contenteditable="true">17/07/2026 (เวลา 14:00 น.)</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">🚚 รูปแบบจัดส่ง:</span>
+                    <span class="meta-val" contenteditable="true">รถโกดังบริษัท</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">📦 จำนวนรวมทั้งหมด:</span>
+                    <span class="meta-val" contenteditable="true">เกม (ของเรา) 500 ชิ้น</span>
+                </div>
+            </div>
+            <div class="details-area">
+                <strong>📋 ขั้นตอนทำงานและการประสานงาน:</strong>
+                <div class="editable-block" contenteditable="true">
+                    <ul>
+                        <li>⚠️ <strong style="color: #c53030;">ข้อควรระวังพิเศษ:</strong> เมื่อพนักงานขับรถไปส่งแล้ว <strong>ต้องนำเอกสารสำเนากลับมาที่คลังด้วยทุกครั้ง!</strong></li>
+                        <li>เบิกงานตามใบงานที่ปริ้นท์ให้เรียบร้อย พร้อมยิงระบบ Zort เลขระบบ: <strong style="color: #2b6cb0;">TF-202607172 (Receive)</strong></li>
+                        <li>เมื่อพร้อมแพ็ค ให้มารับใบปะหน้ากล่องเพื่อระบุแต่ละสาขา</li>
+                        <li>ใช้โปรแกรมเฉพาะทาง <strong>B2S Packing</strong> ในการแยกคัดกรองสินค้าใส่กล่องตามแต่ละสาขา</li>
+                        <li><span style="color: #2b6cb0; font-weight:bold;">กำลังคน:</span> ขอคนเช็คลงกล่อง 1 คน และคนเบิกสินค้า 1 คน</li>
+                    </ul>
+                </div>
+
+                <strong style="display:block; margin-top:15px; margin-bottom:5px;">📊 ตารางแยกจำนวนสาขา (11 สาขา):</strong>
+                <table class="branch-table">
+                    <thead>
+                        <tr>
+                            <th>รหัสสาขา</th>
+                            <th>ชื่อสาขาที่จัดส่ง</th>
+                        </tr>
+                    </thead>
+                    <tbody contenteditable="true">
+                        <tr><td>1106</td><td>(907) มอลล์-งามวงศ์วาน</td></tr>
+                        <tr><td>1156</td><td>(NE-01) เดอะมอลล์โคราช</td></tr>
+                        <tr><td>1182</td><td>(902) เอ็ม บี เค ชั้น 5</td></tr>
+                        <tr><td>1215</td><td>(108) ฟิวเจอร์รังสิต โซนโรบินสัน</td></tr>
+                        <tr><td>1308</td><td>(915) เมกาบางนา</td></tr>
+                        <tr><td>1351</td><td>(903) ซีคอนบางแค</td></tr>
+                        <tr><td>1353</td><td>(N-04) MAYA เชียงใหม่</td></tr>
+                        <tr><td>1359</td><td>(C-02) แพชชั่น ระยอง ชั้น 3</td></tr>
+                        <tr><td>1375</td><td>(NE-01) เทอร์มินอล 21 โคราช</td></tr>
+                        <tr><td>1378</td><td>(102) The Street รัชดา</td></tr>
+                        <tr><td>1383</td><td>(902) สามย่านมิตรทาวน์</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TASK 5 -->
+    <div class="task-card" id="task5">
+        <div class="task-header">
+            <div class="task-title-area">
+                <input type="checkbox" class="task-checkbox" onclick="toggleComplete(this, 'task5')">
+                <span class="task-num">ลำดับที่ 5</span>
+                <span class="task-title" contenteditable="true">จัดเตรียมงานอีเว้นท์ ขอนแก่น</span>
+            </div>
+            <span class="priority-badge prio-low">งานวางแผนระยะกลาง</span>
+        </div>
+        <div class="task-body">
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <span class="meta-label">⏱️ กำหนดส่งเสร็จภายใน:</span>
+                    <span class="meta-val" contenteditable="true">20/07/2026</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">🚚 รูปแบบจัดส่ง:</span>
+                    <span class="meta-val" contenteditable="true">เรียกรถ All (รถร่วม/รถขนส่งทั่วไป) ได้</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">📦 รายละเอียดสต็อกสินค้า:</span>
+                    <span class="meta-val" contenteditable="true">รวม 1,433 ชิ้น</span>
+                </div>
+            </div>
+            <div class="details-area">
+                <strong>📋 รายการจัดเตรียมสิ่งของ (สามารถแก้ไขตัวเลขได้):</strong>
+                <div class="editable-block" contenteditable="true">
+                    <ul>
+                        <li>เกมของเรา: <strong>561 ชิ้น</strong></li>
+                        <li>เกมค่ายอื่น: <strong>63 ชิ้น</strong></li>
+                        <li>ซองการ์ด: <strong>658 ชิ้น</strong></li>
+                        <li>สินค้าเดโม่ (เกมของเรา): <strong>35 ชิ้น</strong></li>
+                        <li>ของแถม (กระเป๋าผ้า): <strong>100 ชิ้น</strong></li>
+                        <li>อุปกรณ์เสริม: <strong>71 ชิ้น</strong> <span style="color: #c53030; font-weight:bold;">*(ยังไม่ Final)*</span></li>
+                    </ul>
+                </div>
+                <strong>📋 ระบบควบคุมคลัง:</strong>
+                <div class="editable-block" contenteditable="true">
+                    <ul>
+                        <li>ใช้โปรแกรมระบบ: <strong>Scan Box Event C</strong></li>
+                        <li>🔗 ลิงก์ระบบ AppSheet: <a href="https://www.appsheet.com/start/b8a0d1e8-1fcd-4681-ba61-6b212ec58ee4" target="_blank" class="link-btn">เปิดระบบ Scan Box Event C</a></li>
+                        <li>เมื่อพร้อมเริ่มจัดงาน สามารถมารับใบปะหน้ากล่องเพื่อเริ่มคัดแยกสินค้าได้เลย</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TASK 6 -->
+    <div class="task-card" id="task6">
+        <div class="task-header">
+            <div class="task-title-area">
+                <input type="checkbox" class="task-checkbox" onclick="toggleComplete(this, 'task6')">
+                <span class="task-num">ลำดับที่ 6</span>
+                <span class="task-title" contenteditable="true">จัดเตรียมงานอีเว้นท์ Mid Year Sales</span>
+            </div>
+            <span class="priority-badge prio-low">งานวางแผนระยะกลาง</span>
+        </div>
+        <div class="task-body">
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <span class="meta-label">⏱️ กำหนดส่งเสร็จภายใน:</span>
+                    <span class="meta-val" contenteditable="true">23/07/2026</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">🚚 รูปแบบจัดส่ง:</span>
+                    <span class="meta-val" contenteditable="true">เรียกรถ All (รถร่วม/รถขนส่งทั่วไป) ได้</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">📦 รายละเอียดสต็อกสินค้า:</span>
+                    <span class="meta-val" contenteditable="true">รวม 5,573 ชิ้น</span>
+                </div>
+            </div>
+            <div class="details-area">
+                <strong>📋 รายการจัดเตรียมสิ่งของ (สามารถแก้ไขตัวเลขได้):</strong>
+                <div class="editable-block" contenteditable="true">
+                    <ul>
+                        <li>เกมของเรา: <strong>3,033 ชิ้น</strong></li>
+                        <li>ซองการ์ด: <strong>1,935 ชิ้น</strong></li>
+                        <li>สินค้าเดโม่ (เกมของเรา): <strong>96 ชิ้น</strong></li>
+                        <li>ของแถม (กระเป๋าผ้า): <strong>300 ชิ้น</strong></li>
+                        <li>อุปกรณ์เสริม: <strong>209 ชิ้น</strong> <span style="color: #c53030; font-weight:bold;">*(ยังไม่ Final)*</span></li>
+                    </ul>
+                </div>
+                <strong>📋 ระบบควบคุมคลัง:</strong>
+                <div class="editable-block" contenteditable="true">
+                    <ul>
+                        <li>ใช้โปรแกรมระบบ: <strong>Scan Box Event A</strong></li>
+                        <li>🔗 ลิงก์ระบบ AppSheet: <a href="https://www.appsheet.com/start/40552f73-af49-4269-86b8-11da44cb5d59" target="_blank" class="link-btn">เปิดระบบ Scan Box Event A</a></li>
+                        <li>เมื่อพร้อมเริ่มจัดงาน สามารถมารับใบปะหน้ากล่องเพื่อเริ่มคัดแยกสินค้าได้เลย</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: 30px; text-align: center; color: #a0aec0; font-size: 12px;">
+        © 2026 Operations & Logistics Management Dashboard. All text inside card fields can be dynamically edited online.
+    </div>
+</div>
+
+</body>
+</html>
