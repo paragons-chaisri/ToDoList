@@ -218,20 +218,16 @@
             background-color: #f7fafc;
         }
         .clear { clear: both; }
+
+        /* 1. CSS เพิ่มเติมสำหรับแสดงเวลาการติ๊กจัดเสร็จ */
+        .time-stamp {
+            font-size: 13px;
+            color: #e53e3e;
+            font-weight: 600;
+            margin-left: 10px;
+            font-style: italic;
+        }
     </style>
-    <script>
-        function toggleComplete(checkbox, cardId) {
-            const card = document.getElementById(cardId);
-            if (checkbox.checked) {
-                card.classList.add('completed');
-            } else {
-                card.classList.remove('completed');
-            }
-        }
-        function printPage() {
-            window.print();
-        }
-    </script>
 </head>
 <body>
 
@@ -258,6 +254,8 @@
                 <input type="checkbox" class="task-checkbox" onclick="toggleComplete(this, 'task1')">
                 <span class="task-num">ลำดับที่ 1</span>
                 <span class="task-title" contenteditable="true">Chula คลังสยาม</span>
+                <!-- 2. พื้นที่แสดงเวลาของ Task 1 -->
+                <span class="time-stamp" id="time-task1"></span>
             </div>
             <span class="priority-badge prio-high">ด่วนที่สุด (เช้า)</span>
         </div>
@@ -297,6 +295,8 @@
                 <input type="checkbox" class="task-checkbox" onclick="toggleComplete(this, 'task2')">
                 <span class="task-num">ลำดับที่ 2</span>
                 <span class="task-title" contenteditable="true">B2S DC</span>
+                <!-- 2. พื้นที่แสดงเวลาของ Task 2 -->
+                <span class="time-stamp" id="time-task2"></span>
             </div>
             <span class="priority-badge prio-high">ด่วนมาก</span>
         </div>
@@ -334,6 +334,8 @@
                 <input type="checkbox" class="task-checkbox" onclick="toggleComplete(this, 'task3')">
                 <span class="task-num">ลำดับที่ 3</span>
                 <span class="task-title" contenteditable="true">งานกล่องบุบ ส่งคาเฟ่โลตัสบางนา</span>
+                <!-- 2. พื้นที่แสดงเวลาของ Task 3 -->
+                <span class="time-stamp" id="time-task3"></span>
             </div>
             <span class="priority-badge prio-med">ความสำคัญปกติ</span>
         </div>
@@ -377,6 +379,8 @@
                 <input type="checkbox" class="task-checkbox" onclick="toggleComplete(this, 'task4')">
                 <span class="task-num">ลำดับที่ 4</span>
                 <span class="task-title" contenteditable="true">นายอินทร์ Naiin (กระจาย 11 สาขา)</span>
+                <!-- 2. พื้นที่แสดงเวลาของ Task 4 -->
+                <span class="time-stamp" id="time-task4"></span>
             </div>
             <span class="priority-badge prio-med">ความสำคัญปกติ</span>
         </div>
@@ -445,6 +449,8 @@
                 <input type="checkbox" class="task-checkbox" onclick="toggleComplete(this, 'task5')">
                 <span class="task-num">ลำดับที่ 5</span>
                 <span class="task-title" contenteditable="true">จัดเตรียมงานอีเว้นท์ ขอนแก่น</span>
+                <!-- 2. พื้นที่แสดงเวลาของ Task 5 -->
+                <span class="time-stamp" id="time-task5"></span>
             </div>
             <span class="priority-badge prio-low">งานวางแผนระยะกลาง</span>
         </div>
@@ -498,6 +504,8 @@
                 <input type="checkbox" class="task-checkbox" onclick="toggleComplete(this, 'task6')">
                 <span class="task-num">ลำดับที่ 6</span>
                 <span class="task-title" contenteditable="true">จัดเตรียมงานอีเว้นท์ Mid Year Sales</span>
+                <!-- 2. พื้นที่แสดงเวลาของ Task 6 -->
+                <span class="time-stamp" id="time-task6"></span>
             </div>
             <span class="priority-badge prio-low">งานวางแผนระยะกลาง</span>
         </div>
@@ -548,5 +556,76 @@
     </div>
 </div>
 
+<!-- 3. ส่วน JavaScript สำหรับเชื่อมต่อกับ Firebase Realtime Database -->
+<script type="module">
+    // นำเข้าโมดูล Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+    // 🔴 แก้ไข: นำค่า Config ที่ได้จากระบบ Firebase Console ของคุณมาวางทับส่วนนี้ 🔴
+    const firebaseConfig = {
+        apiKey: "AIzaSyB4ScTHdFwQdV9wZ8QoMqKPH6pJroB76KM",
+        authDomain: "todolist-6c50a.firebaseapp.com",
+        databaseURL: "https://todolist-6c50a-default-rtdb.asia-southeast1.firebasedatabase.app", // ตรวจสอบให้แน่ใจว่าได้ระบุช่องนี้ไว้ด้วย
+        projectId: "todolist-6c50a",
+        storageBucket: "todolist-6c50a.firebasestorage.app",
+        messagingSenderId: "767333087355",
+        appId: "1:767333087355:web:d8136d943010d4d4520ade",
+        measurementId: "G-KNHN66QKSQ"
+    };
+
+    // เริ่มต้นเชื่อมต่อกับระบบ Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // ทำการรับข้อมูลแบบ Real-time และอัปเดตหน้าจอทันทีเมื่อเกิดความเปลี่ยนแปลง
+    const tasksRef = ref(db, 'tasks/');
+    onValue(tasksRef, (snapshot) => {
+        const data = snapshot.val();
+        if(data) {
+            for (const [taskId, taskData] of Object.entries(data)) {
+                const card = document.getElementById(taskId);
+                const checkbox = document.querySelector(`#${taskId} .task-checkbox`);
+                const timeSpan = document.getElementById(`time-${taskId}`);
+
+                if(card && checkbox) {
+                    checkbox.checked = taskData.completed;
+                    
+                    if(taskData.completed) {
+                        card.classList.add('completed');
+                        if(timeSpan) timeSpan.innerText = `(จัดเสร็จเมื่อ: ${taskData.timestamp})`;
+                    } else {
+                        card.classList.remove('completed');
+                        if(timeSpan) timeSpan.innerText = "";
+                    }
+                }
+            }
+        }
+    });
+
+    // ฟังก์ชันที่จะบันทึกการเปลี่ยนแปลงลงฐานข้อมูล Firebase
+    window.toggleComplete = function(checkbox, cardId) {
+        const isCompleted = checkbox.checked;
+        
+        let timeString = "";
+        if (isCompleted) {
+            const now = new Date();
+            timeString = now.toLocaleString('th-TH', { 
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit' 
+            });
+        }
+
+        // ส่งข้อมูลอัปเดตไปที่ Firebase ทันที เพื่อให้ผู้ใช้คนอื่นๆ เห็นร่วมกันแบบ Real-Time
+        set(ref(db, 'tasks/' + cardId), {
+            completed: isCompleted,
+            timestamp: timeString
+        });
+    };
+
+    window.printPage = function() {
+        window.print();
+    };
+</script>
 </body>
 </html>
